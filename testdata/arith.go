@@ -5,8 +5,8 @@ import (
 	"errors"
 	"math"
 
-	"github.com/semrush/zenrpc"
-	"github.com/semrush/zenrpc/testdata/model"
+	"github.com/devimteam/zenrpc"
+	"github.com/devimteam/zenrpc/testdata/model"
 )
 
 type ArithService struct{ zenrpc.Service }

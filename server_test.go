@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/semrush/zenrpc"
-	"github.com/semrush/zenrpc/testdata"
+	"github.com/devimteam/zenrpc"
+	"github.com/devimteam/zenrpc/testdata"
 )
 
 // ArithService description goes here.

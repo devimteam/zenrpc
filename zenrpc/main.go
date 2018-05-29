@@ -9,14 +9,14 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/semrush/zenrpc/parser"
+	"github.com/devimteam/zenrpc/parser"
 )
 
 const (
 	version = "1.1.0"
 
-	openIssueURL = "https://github.com/semrush/zenrpc/issues/new"
-	githubURL    = "https://github.com/semrush/zenrpc"
+	openIssueURL = "https://github.com/devimteam/zenrpc/issues/new"
+	githubURL    = "https://github.com/devimteam/zenrpc"
 )
 
 var (

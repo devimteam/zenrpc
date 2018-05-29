@@ -3,7 +3,7 @@ package main
 import (
 	"text/template"
 
-	"github.com/semrush/zenrpc/parser"
+	"github.com/devimteam/zenrpc/parser"
 )
 
 var (
@@ -59,8 +59,8 @@ import (
 	"encoding/json"
 	"context"
 
-	"github.com/semrush/zenrpc"
-	"github.com/semrush/zenrpc/smd"
+	"github.com/devimteam/zenrpc"
+	"github.com/devimteam/zenrpc/smd"
 
 	{{ range .ImportsForGeneration}}
 		{{if .Name}}{{.Name.Name}} {{end}}{{.Path.Value}}

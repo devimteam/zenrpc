@@ -6,7 +6,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/semrush/zenrpc"
+	"github.com/devimteam/zenrpc"
 )
 
 // SerialPeopleAccess is middleware for seiral access to PhoneBook methods
