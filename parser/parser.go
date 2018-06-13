@@ -47,6 +47,7 @@ type Service struct {
 	Name        string
 	Methods     []*Method
 	Description string
+	IsInterface bool
 }
 
 type Method struct {
@@ -105,6 +106,14 @@ type Struct struct {
 	Type       string
 	StructType *ast.StructType
 	Properties []Property // array because order is important
+}
+
+type Interface struct {
+	Name          string // key in map, Ref in arguments and returns
+	Namespace     string
+	Type          string
+	InterfaceType *ast.InterfaceType
+	Properties    []Property // array because order is important
 }
 
 type Property struct {
@@ -205,7 +214,10 @@ func (pi *PackageInfo) parseFiles(files []os.FileInfo) error {
 		}
 
 		// get structs for zenrpc
-		pi.parseServices(astFile)
+		err = pi.parseServices(astFile)
+		if err != nil {
+			return err
+		}
 
 		pi.Scopes["."] = append(pi.Scopes["."], astFile.Scope) // collect current package scopes
 		pi.Imports = append(pi.Imports, astFile.Imports...)    // collect imports
@@ -223,7 +235,7 @@ func (pi *PackageInfo) parseFiles(files []os.FileInfo) error {
 	return nil
 }
 
-func (pi *PackageInfo) parseServices(f *ast.File) {
+func (pi *PackageInfo) parseServices(f *ast.File) error {
 	for _, decl := range f.Decls {
 		gdecl, ok := decl.(*ast.GenDecl)
 		if !ok || gdecl.Tok != token.TYPE {
@@ -240,22 +252,77 @@ func (pi *PackageInfo) parseServices(f *ast.File) {
 				continue
 			}
 
-			structType, ok := spec.Type.(*ast.StructType)
-			if !ok {
+			switch tt := spec.Type.(type) {
+			case *ast.StructType:
+				// check that struct is our zenrpc struct
+				if hasZenrpcComment(spec, zenrpcComment) || hasZenrpcService(tt) {
+					pi.Services = append(pi.Services, &Service{
+						GenDecl:     gdecl,
+						Name:        spec.Name.Name,
+						Methods:     []*Method{},
+						Description: parseCommentGroup(spec.Doc),
+					})
+				}
+			case *ast.InterfaceType:
+				if hasZenrpcComment(spec, zenrpcComment) {
+					methods, err := pi.parseInterfaceMethods(tt)
+					if err != nil {
+						return err
+					}
+					pi.Services = append(pi.Services, &Service{
+						GenDecl:     gdecl,
+						Name:        spec.Name.Name,
+						Methods:     methods,
+						Description: parseCommentGroup(spec.Doc),
+						IsInterface: true,
+					})
+				}
+			default:
 				continue
-			}
-
-			// check that struct is our zenrpc struct
-			if hasZenrpcComment(spec, zenrpcComment) || hasZenrpcService(structType) {
-				pi.Services = append(pi.Services, &Service{
-					GenDecl:     gdecl,
-					Name:        spec.Name.Name,
-					Methods:     []*Method{},
-					Description: parseCommentGroup(spec.Doc),
-				})
 			}
 		}
 	}
+	return nil
+}
+
+func (pi *PackageInfo) parseInterfaceMethods(it *ast.InterfaceType) ([]*Method, error) {
+	if it.Methods == nil {
+		return nil, nil
+	}
+	var mm []*Method
+	for _, method := range it.Methods.List {
+		ff, ok := method.Type.(*ast.FuncType)
+		if !ok { // then embedded
+			continue
+		}
+		m := Method{
+			FuncDecl:           ff,
+			Name:               method.Names[0].Name,
+			EndpointName:       pi.caser(method.Names[0].Name),
+			SchemaEndpointName: pi.argCaser(method.Names[0].Name),
+			Args:               []Arg{},
+			DefaultValues:      make(map[string]DefaultValue),
+			Returns:            []Return{},
+			Description:        parseCommentGroup(method.Doc),
+			Errors:             []SMDError{},
+		}
+
+		serviceNames := []string{m.Name}
+
+		if err := m.parseArguments(pi, ff, serviceNames); err != nil {
+			return nil, err
+		}
+
+		if err := m.parseReturns(pi, ff, serviceNames); err != nil {
+			return nil, err
+		}
+
+		// parse default values
+		m.parseComments(method.Doc, pi)
+
+		mm = append(mm, &m)
+	}
+	return mm, nil
 }
 
 func (pi *PackageInfo) parseMethods(f *ast.File) error {
@@ -284,11 +351,11 @@ func (pi *PackageInfo) parseMethods(f *ast.File) error {
 			continue
 		}
 
-		if err := m.parseArguments(pi, fdecl, serviceNames); err != nil {
+		if err := m.parseArguments(pi, fdecl.Type, serviceNames); err != nil {
 			return err
 		}
 
-		if err := m.parseReturns(pi, fdecl, serviceNames); err != nil {
+		if err := m.parseReturns(pi, fdecl.Type, serviceNames); err != nil {
 			return err
 		}
 
@@ -383,12 +450,12 @@ func (m *Method) linkWithServices(pi *PackageInfo, fdecl *ast.FuncDecl) (names [
 	return
 }
 
-func (m *Method) parseArguments(pi *PackageInfo, fdecl *ast.FuncDecl, serviceNames []string) error {
-	if fdecl.Type.Params == nil || fdecl.Type.Params.List == nil {
+func (m *Method) parseArguments(pi *PackageInfo, fdecl *ast.FuncType, serviceNames []string) error {
+	if fdecl.Params == nil || fdecl.Params.List == nil {
 		return nil
 	}
 
-	for _, field := range fdecl.Type.Params.List {
+	for _, field := range fdecl.Params.List {
 		if field.Names == nil {
 			continue
 		}
@@ -456,8 +523,8 @@ func (m *Method) parseArguments(pi *PackageInfo, fdecl *ast.FuncDecl, serviceNam
 	return nil
 }
 
-func (m *Method) parseReturns(pi *PackageInfo, fdecl *ast.FuncDecl, serviceNames []string) error {
-	if fdecl.Type.Results == nil || fdecl.Type.Results.List == nil {
+func (m *Method) parseReturns(pi *PackageInfo, fdecl *ast.FuncType, serviceNames []string) error {
+	if fdecl.Results == nil || fdecl.Results.List == nil {
 		return nil
 	}
 
@@ -471,7 +538,7 @@ func (m *Method) parseReturns(pi *PackageInfo, fdecl *ast.FuncDecl, serviceNames
 	}
 
 	hasError := false
-	for _, field := range fdecl.Type.Results.List {
+	for _, field := range fdecl.Results.List {
 		if len(field.Names) > 1 {
 			return fmt.Errorf("%s contain more than one return arguments with same type", methodsFn())
 		}

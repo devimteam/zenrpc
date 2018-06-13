@@ -82,8 +82,14 @@ var RPC = struct {
 }
 
 {{ range $s := .Services}}
+	{{$isIface := .IsInterface}}
+	{{if $isIface}}
+	type {{.Name}}Server struct {
+		S {{.Name}}
+	}
+	{{end}}
 
-	func ({{.Name}}) SMD() smd.ServiceInfo {
+	func ({{.Name}}{{if $isIface}}Server{{end}}) SMD() smd.ServiceInfo {
 		return smd.ServiceInfo{
 			Description: ` + "`{{.Description}}`" + `,
 			Methods: map[string]smd.Service{ 
@@ -129,7 +135,7 @@ var RPC = struct {
 	}
 
 	// Invoke is as generated code from zenrpc cmd
-	func (s {{.Name}}) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
+	func (s {{.Name}}{{if $isIface}}Server{{end}}) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
 		resp := zenrpc.Response{}
 		{{ if .HasErrorVariable }}var err error{{ end }}
 
@@ -165,9 +171,9 @@ var RPC = struct {
 					{{ end }}
 
 				{{ end }} {{if .Returns}}
-					resp.Set(s.{{.Name}}({{if .HasContext}}ctx, {{end}} {{ range .Args }}{{if and (not .HasStar) .HasDefaultValue}}*{{end}}args.{{.CapitalName}}, {{ end }}))
+					resp.Set(s{{if $isIface}}.S{{end}}.{{.Name}}({{if .HasContext}}ctx, {{end}} {{ range .Args }}{{if and (not .HasStar) .HasDefaultValue}}*{{end}}args.{{.CapitalName}}, {{ end }}))
 				{{else}}
-					s.{{.Name}}({{if .HasContext}}ctx, {{end}} {{ range .Args }}{{if and (not .HasStar) .HasDefaultValue}}*{{end}}args.{{.CapitalName}}, {{ end }})
+					s{{if $isIface}}.S{{end}}.{{.Name}}({{if .HasContext}}ctx, {{end}} {{ range .Args }}{{if and (not .HasStar) .HasDefaultValue}}*{{end}}args.{{.CapitalName}}, {{ end }})
 				{{end}}
 		{{- end }}
 		default:
