@@ -25,7 +25,7 @@ func (pi *PackageInfo) parseImports(imports []*ast.ImportSpec) error {
 		}
 
 		// for each file
-		pkgImports := []*ast.ImportSpec{}
+		var pkgImports []*ast.ImportSpec
 		for _, f := range files {
 			if f.IsDir() {
 				continue
@@ -67,7 +67,10 @@ func importNamePath(i *ast.ImportSpec) (name, path string) {
 	return
 }
 
-var globalSet = make(map[string]struct{})
+var globalSet = map[string]struct{}{
+	"\"encoding/json\"": {},
+	"\"context\"":       {},
+}
 
 func uniqueImports(in []*ast.ImportSpec) (out []*ast.ImportSpec) {
 	for _, i := range in {
