@@ -148,6 +148,12 @@ func (e Error) Error() string {
 	return ErrorMsg(e.Code)
 }
 
+// Set data to Error object and return it
+func (e *Error) SetData(data interface{}) *Error {
+	e.Data = data
+	return e
+}
+
 // NewResponseError returns new Response with Error object.
 func NewResponseError(id *json.RawMessage, code int, message string, data interface{}) Response {
 	if message == "" {
