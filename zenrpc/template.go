@@ -112,6 +112,7 @@ var RPC = struct {
 						}, 
 						{{- if .SMDReturn}}
 							Returns: smd.JSONSchema{ 
+								Name: "{{.SMDReturn.Name}}",
 								Description: ` + "`{{.SMDReturn.Description}}`" + `,
 								Optional:    {{.SMDReturn.HasStar}},
 								{{template "smdType" .SMDReturn.SMDType }}
