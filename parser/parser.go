@@ -716,7 +716,12 @@ func parseSMDType(expr ast.Expr) (string, string) {
 	switch v := expr.(type) {
 	case *ast.StarExpr:
 		return parseSMDType(v.X)
-	case *ast.SelectorExpr, *ast.MapType, *ast.InterfaceType:
+	case *ast.SelectorExpr:
+		if v.X.(*ast.Ident).Name == "time" && v.Sel.Name == "Time" {
+			return "String", ""
+		}
+		return "Object", ""
+	case *ast.MapType, *ast.InterfaceType:
 		return "Object", ""
 	case *ast.ArrayType:
 		mainType, itemType := parseSMDType(v.Elt)
@@ -750,6 +755,10 @@ func parseStruct(expr ast.Expr) *Struct {
 		return parseStruct(v.X)
 	case *ast.SelectorExpr:
 		namespace := v.X.(*ast.Ident).Name
+		if namespace == "time" && v.Sel.Name == "Time" {
+			return nil
+		}
+
 		return &Struct{
 			Name:      namespace + "." + v.Sel.Name,
 			Namespace: namespace,
