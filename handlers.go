@@ -19,8 +19,23 @@ type Printer interface {
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// check for smd parameter and server settings and write schema if all conditions met,
 	if _, ok := r.URL.Query()["smd"]; ok && s.options.ExposeSMD && r.Method == http.MethodGet {
-		b, _ := json.Marshal(s.SMD())
-		w.Write(b)
+		b, err := json.Marshal(s.SMD())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		_, err = w.Write(b)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if s.options.AllowCORS {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+		}
+		return
+	}
+
+	if r.Method == http.MethodOptions {
 		return
 	}
 

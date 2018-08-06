@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/devimteam/zenrpc"
+	"github.com/devimteam/zenrpc/testdata"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/semrush/zenrpc"
-	"github.com/semrush/zenrpc/testdata"
 )
 
 func main() {
@@ -26,6 +26,7 @@ func main() {
 	rpc.Register("arith", testdata.ArithService{})
 	rpc.Register("printer", testdata.PrintService{})
 	rpc.Register("", testdata.ArithService{}) // public
+	rpc.Register("parser", testdata.ParserServiceServer{})
 
 	rpc.Use(zenrpc.Logger(log.New(os.Stderr, "", log.LstdFlags)))
 	rpc.Use(zenrpc.Metrics(""), testdata.SerialPeopleAccess(phonebook))

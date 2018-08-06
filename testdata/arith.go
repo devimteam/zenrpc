@@ -5,8 +5,8 @@ import (
 	"errors"
 	"math"
 
-	"github.com/semrush/zenrpc"
-	"github.com/semrush/zenrpc/testdata/model"
+	"github.com/devimteam/zenrpc"
+	"github.com/devimteam/zenrpc/testdata/model"
 )
 
 type ArithService struct{ zenrpc.Service }
@@ -74,7 +74,7 @@ func (as *ArithService) Divide(a, b int) (quo *Quotient, err error) {
 	if b == 0 {
 		return nil, errors.New("divide by zero")
 	} else if b == 1 {
-		return nil, zenrpc.NewError(401, errors.New("we do not serve 1"))
+		return nil, zenrpc.NewError(401, errors.New("we do not serve 1")).SetData("additional information")
 	}
 
 	return &Quotient{

@@ -6,16 +6,17 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/semrush/zenrpc"
-	"github.com/semrush/zenrpc/smd"
+	"github.com/devimteam/zenrpc"
+	"github.com/devimteam/zenrpc/smd"
 
-	"github.com/semrush/zenrpc/testdata/model"
+	"github.com/devimteam/zenrpc/testdata/model"
 )
 
 var RPC = struct {
-	ArithService struct{ Sum, Positive, DoSomething, DoSomethingWithPoint, Multiply, CheckError, CheckZenRPCError, Divide, Pow, Pi, SumArray string }
-	PhoneBook    struct{ Get, ValidateSearch, ById, Delete, Remove, Save string }
-	PrintService struct{ PrintRequiredDefault, PrintOptionalWithDefault, PrintRequired, PrintOptional string }
+	ArithService  struct{ Sum, Positive, DoSomething, DoSomethingWithPoint, Multiply, CheckError, CheckZenRPCError, Divide, Pow, Pi, SumArray string }
+	ParserService struct{ Validate string }
+	PhoneBook     struct{ Get, ValidateSearch, ById, Delete, Remove, Save string }
+	PrintService  struct{ PrintRequiredDefault, PrintOptionalWithDefault, PrintRequired, PrintOptional string }
 }{
 	ArithService: struct{ Sum, Positive, DoSomething, DoSomethingWithPoint, Multiply, CheckError, CheckZenRPCError, Divide, Pow, Pi, SumArray string }{
 		Sum:                  "sum",
@@ -29,6 +30,9 @@ var RPC = struct {
 		Pow:                  "pow",
 		Pi:                   "pi",
 		SumArray:             "sumarray",
+	},
+	ParserService: struct{ Validate string }{
+		Validate: "validate",
 	},
 	PhoneBook: struct{ Get, ValidateSearch, ById, Delete, Remove, Save string }{
 		Get:            "get",
@@ -428,6 +432,76 @@ func (s ArithService) Invoke(ctx context.Context, method string, params json.Raw
 		}
 
 		resp.Set(s.SumArray(args.Array))
+
+	default:
+		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)
+	}
+
+	return resp
+}
+
+type ParserServiceServer struct {
+	S ParserService
+}
+
+func (ParserServiceServer) SMD() smd.ServiceInfo {
+	return smd.ServiceInfo{
+		Description: ``,
+		Methods: map[string]smd.Service{
+			"Validate": {
+				Description: ``,
+				Parameters: []smd.JSONSchema{
+					{
+						Name:        "message",
+						Optional:    false,
+						Description: ``,
+						Type:        smd.Array,
+						Items: map[string]string{
+							"type": smd.Integer,
+						},
+					},
+					{
+						Name:        "encoder",
+						Optional:    false,
+						Description: ``,
+						Type:        smd.Integer,
+					},
+				},
+				Returns: smd.JSONSchema{
+					Description: ``,
+					Optional:    false,
+					Type:        smd.Boolean,
+				},
+			},
+		},
+	}
+}
+
+// Invoke is as generated code from zenrpc cmd
+func (s ParserServiceServer) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
+	resp := zenrpc.Response{}
+	var err error
+
+	switch method {
+	case RPC.ParserService.Validate:
+		var args = struct {
+			Message []byte `json:"message"`
+			Encoder int    `json:"encoder"`
+		}{}
+
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"message", "encoder"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, err.Error(), nil)
+			}
+		}
+
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, err.Error(), nil)
+			}
+		}
+
+		resp.Set(s.S.Validate(args.Message, args.Encoder))
 
 	default:
 		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)
