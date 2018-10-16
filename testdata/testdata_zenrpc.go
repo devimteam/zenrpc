@@ -5,12 +5,15 @@ package testdata
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/devimteam/zenrpc"
 	"github.com/devimteam/zenrpc/smd"
 
 	"github.com/devimteam/zenrpc/testdata/model"
 )
+
+var _ = time.Time{} // suspend 'imported but not used' error
 
 var RPC = struct {
 	ArithService  struct{ Sum, Positive, DoSomething, DoSomethingWithPoint, Multiply, CheckError, CheckZenRPCError, Divide, Pow, Pi, SumArray string }
@@ -71,6 +74,7 @@ func (ArithService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Boolean,
@@ -80,6 +84,7 @@ func (ArithService) SMD() smd.ServiceInfo {
 				Description: ``,
 				Parameters:  []smd.JSONSchema{},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Boolean,
@@ -127,6 +132,7 @@ func (ArithService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Integer,
@@ -177,6 +183,7 @@ func (ArithService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "quo",
 					Description: ``,
 					Optional:    true,
 					Type:        smd.Object,
@@ -213,6 +220,7 @@ func (ArithService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Float,
@@ -222,6 +230,7 @@ func (ArithService) SMD() smd.ServiceInfo {
 				Description: `PI returns math.Pi.`,
 				Parameters:  []smd.JSONSchema{},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Float,
@@ -241,6 +250,7 @@ func (ArithService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Float,
@@ -468,6 +478,7 @@ func (ParserServiceServer) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Boolean,
@@ -571,6 +582,7 @@ func (PhoneBook) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "res",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Array,
@@ -687,6 +699,7 @@ func (PhoneBook) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    true,
 					Type:        smd.Object,
@@ -737,6 +750,7 @@ func (PhoneBook) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    true,
 					Type:        smd.Object,
@@ -816,6 +830,7 @@ func (PhoneBook) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "success",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Boolean,
@@ -832,6 +847,7 @@ func (PhoneBook) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "success",
 					Description: `operation result`,
 					Optional:    false,
 					Type:        smd.Boolean,
@@ -914,6 +930,7 @@ func (PhoneBook) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "id",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.Integer,
@@ -1090,6 +1107,7 @@ func (PrintService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.String,
@@ -1106,6 +1124,7 @@ func (PrintService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.String,
@@ -1122,6 +1141,7 @@ func (PrintService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.String,
@@ -1138,6 +1158,7 @@ func (PrintService) SMD() smd.ServiceInfo {
 					},
 				},
 				Returns: smd.JSONSchema{
+					Name:        "",
 					Description: ``,
 					Optional:    false,
 					Type:        smd.String,
