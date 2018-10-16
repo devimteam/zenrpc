@@ -58,6 +58,7 @@ package {{.PackageName}}
 import (
 	"encoding/json"
 	"context"
+	"time"
 
 	"github.com/devimteam/zenrpc"
 	"github.com/devimteam/zenrpc/smd"
@@ -66,6 +67,8 @@ import (
 		{{if .Name}}{{.Name.Name}} {{end}}{{.Path.Value}}
 	{{- end }}
 )
+
+var _ = time.Time{} // suspend 'imported but not used' error
 
 var RPC = struct {
 {{ range .Services}}
